@@ -1,0 +1,114 @@
+# ============================================
+# Docker Compose Template
+# Multi-Environment Deployment Configuration
+# ============================================
+# 
+# INSTRUCTIONS:
+# 1. Copy this file to your project root as "docker-compose.yml"
+# 2. Update all TODO comments for your application
+# 3. Adjust ports if they conflict with other services
+#
+# USAGE:
+#   Start staging:    docker compose up staging -d
+#   Start production: docker compose up production -d
+#   Start both:       docker compose up -d
+#   Stop all:         docker compose down
+#   View logs:        docker compose logs -f [staging|production]
+#   Rebuild:          docker compose build --no-cache
+#
+# ============================================
+
+services:
+  # ==========================================
+  # STAGING ENVIRONMENT
+  # ==========================================
+  # Purpose: Testing new features before production
+  # URL: http://localhost:5000
+  # ==========================================
+  staging:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${PROJECT_NAME:-ex62-fullcrud}-staging
+    image: ${PROJECT_NAME:-ex62-fullcrud}-staging
+    ports:
+      # TODO: Update the internal port (right side) to match your app
+      # Format: "external:internal"
+      - "5000:8080"
+    environment:
+      - NODE_ENV=staging           # TODO: Change variable name if not Node.js
+      - PORT=8080                  # TODO: Update to your app's port
+      - APP_NAME=${PROJECT_NAME:-MyApp}-STAGING
+      # TODO: Add any other environment variables your app needs
+      # - DATABASE_URL=...
+      # - API_KEY=...
+    healthcheck:
+      # TODO: Update the health check URL and port
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # ==========================================
+  # PRODUCTION ENVIRONMENT
+  # ==========================================
+  # Purpose: Stable release for end users
+  # URL: http://localhost:6000
+  # ==========================================
+  production:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${PROJECT_NAME:-ex62-fullcrud}-production
+    image: ${PROJECT_NAME:-ex62-fullcrud}-production
+    ports:
+      # TODO: Update the internal port (right side) to match your app
+      - "6000:8080"
+    environment:
+      - NODE_ENV=production        # TODO: Change variable name if not Node.js
+      - PORT=8080                  # TODO: Update to your app's port
+      - APP_NAME=${PROJECT_NAME:-MyApp}-PRODUCTION
+      # TODO: Add any other environment variables your app needs
+      # - DATABASE_URL=...
+      # - API_KEY=...
+    healthcheck:
+      # TODO: Update the health check URL and port
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - app-network
+
+# ==========================================
+# NETWORKS
+# ==========================================
+networks:
+  app-network:
+    driver: bridge
+
+# ==========================================
+# OPTIONAL: DATABASE SERVICES
+# ==========================================
+# Uncomment and configure if your app needs a database
+#
+#   database:
+#     image: postgres:15-alpine    # or mysql:8, mongo:6, etc.
+#     container_name: ${PROJECT_NAME:-ex62-fullcrud}-db
+#     environment:
+#       - POSTGRES_USER=appuser
+#       - POSTGRES_PASSWORD=apppassword
+#       - POSTGRES_DB=appdb
+#     volumes:
+#       - db-data:/var/lib/postgresql/data
+#     networks:
+#       - app-network
+#
+# volumes:
+#   db-data:

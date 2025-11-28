@@ -33,6 +33,7 @@ public class AppointmentController {
 
 	    return "index";
 	}
+
 	
 	@PostMapping("/insertAppointment")
 	public String insertAppointment(Model model, @ModelAttribute Appointment appointment) {
